@@ -55,3 +55,22 @@ ol.tracks h2{display:flex;gap:10px;align-items:baseline;font-size:1.15rem;margin
 ol.tracks h2::before{content:counter(t);font-family:var(--font-mono);font-size:.8rem;font-weight:400;background:var(--code-bg);padding:1px 7px;border-radius:3px;color:var(--muted)}
 ol.tracks p{margin:0 0 6px}
 .empty{color:var(--muted)}
+
+/* Writing entries */
+.post .eyebrow{font-family:var(--font-mono);font-size:.8rem;color:var(--muted);margin:0 0 8px}
+.post h1{margin-bottom:24px}
+.post h2{margin-top:40px}
+.post ul,.post ol{margin:0 0 14px}
+.post blockquote{margin:20px 0;padding:10px 16px;border-left:3px solid var(--accent);background:var(--code-bg);border-radius:0 4px 4px 0}
+.post blockquote p{margin:0}
+.post figure{margin:24px 0}
+.post figure img{display:block;width:100%;height:auto;border-radius:8px}
+.post figcaption{color:var(--muted);font-size:.88rem;margin-top:8px}
+.post .table-wrap{overflow-x:auto;margin:16px 0}
+.post table{border-collapse:collapse;width:100%;font-size:.92rem}
+.post th,.post td{border:1px solid var(--rule);padding:6px 10px;text-align:left;vertical-align:top}
+.post th{background:var(--code-bg);font-weight:600}
+.post ol.refs{font-size:.9rem;padding-left:1.6rem}
+.post ol.refs li{margin:6px 0;overflow-wrap:anywhere}
+.post ol.refs li:target{background:var(--code-bg)}
+ul.list li .date{flex:none}

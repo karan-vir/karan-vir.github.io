@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How Humans Learn · Karanvir Sidana</title>
+<meta name="description" content="A research-journal entry on how humans learn by themselves, as groundwork for self-learning machines.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="site">
+  <p class="site-name"><a href="../index.html">Karanvir Sidana</a></p>
+  <nav class="top" aria-label="Main"><a href="../index.html">About</a><a href="../research.html">Research</a><a href="../writing.html" aria-current="page">Writing</a></nav>
+</header>
+<main>
+<article class="post">
+  <a class="back" href="../writing.html">← Writing</a>
+  <p class="eyebrow"><span class="date">2026-10-18</span> · Framing</p>
+  <h1>How Humans Learn: Notes Toward Self-Learning Machines</h1>
+<h2>1. The question</h2>
+<p>I started this entry wanting to write about "self-evolving" AI. The deeper I read, the less sure I was what the "self" in those systems meant. The main examples I found fall into four groups:</p>
+<ul>
+<li><strong>Self-rewarding models.</strong> A language model judges its own answers and trains on its own judgements [<a href="#ref-1">1</a>].</li>
+<li><strong>Self-modifying agents.</strong> The Darwin Gödel Machine rewrites its own code, scores each new version on coding benchmarks, and keeps the variants in a growing archive [<a href="#ref-2">2</a>].</li>
+<li><strong>Evolutionary search.</strong> AlphaEvolve has language models generate candidate programs, scores them with an automatic evaluator, and keeps evolving the best ones [<a href="#ref-3">3</a>].</li>
+<li><strong>Memory and skill libraries.</strong> Agents store strategies, tools or skills that worked and reuse them on later tasks [<a href="#ref-4">4</a>].</li>
+</ul>
+<p>The first three automate the engineer's job: generate a variant, score it, keep the winner. <em>(My view.)</em> That is useful, but it isn't a system that <em>learns by itself</em>. The fourth is closer to a learner remembering its own experience, but the memory sits outside the model and doesn't change how the model learns. <em>(My view.)</em></p>
+<p>So I'm stepping back to the one learner that clearly does: humans. This entry asks a narrow question:</p>
+<p><strong>How do humans learn so much, mostly without being taught each step?</strong></p>
+<p>I'm not trying to design an AI system here. I want a clear picture of the human side first, so that the next entry can ask what AI should borrow from it.</p>
+<p><strong>Why bother?</strong> Two reasons. First, today's language models mostly stop learning when training ends, and adapting them to new data without losing what they already know is still an open problem [<a href="#ref-5">5</a>]. Humans do this every day. Second, systems that improve themselves without a reliable source of truth can go wrong: a 2026 risk report found that letting agents evolve through their own memory and tools made them less safe in many of the scenarios it tested [<a href="#ref-6">6</a>]. Humans keep learning for decades <em>and</em> stay grounded, so they seem like the right place to start. <em>(The framing is my view.)</em></p>
+<p>My own reason is narrower. I want to work on self-made curricula and on models that improve their successors, and I can't do that well without knowing what "learning by itself" should mean.</p>
+<h2>2. Five problems every learner has to solve</h2>
+<p>Reading through the neuroscience, I found it easiest to organise everything around five problems. Any learner that keeps learning on its own has to deal with these five:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Problem</th>
+<th>Question the learner faces</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Signal</td>
+<td>What did I get wrong?</td>
+</tr>
+<tr>
+<td>2. Choice</td>
+<td>What should I try next?</td>
+</tr>
+<tr>
+<td>3. Memory</td>
+<td>How do I keep what I learned without losing what I knew?</td>
+</tr>
+<tr>
+<td>4. Plasticity</td>
+<td>How much should I change?</td>
+</tr>
+<tr>
+<td>5. Learning to learn</td>
+<td>How do I get better at learning itself?</td>
+</tr>
+</tbody>
+</table></div>
+<p>The brain has a well-studied answer to each. None of them is "the" mechanism; they only work together. <em>(My framing.)</em></p>
+<p>Sections 3–7 take them one at a time. Section 8 then shows how they connect: not as one fixed loop, but as a few modules that different signals switch on at different times.</p>
+<h2>3. Signal: learning from surprise</h2>
+<p>The first answer is that the brain learns from the <strong>gap between what it expected and what happened</strong>.</p>
+<p>Schultz, Dayan and Montague reviewed evidence that learning is driven by changes in expectations about future rewards and punishments, and that dopamine neurons in the primate midbrain appear to signal <em>errors</em> in those predictions [<a href="#ref-7">7</a>]. They also showed this matches the error signal used in reinforcement learning theory [<a href="#ref-7">7</a>].</p>
+<p>The recordings make this concrete. A monkey watched for a light; when it came on, the monkey touched a lever and received a drop of fruit juice, while the researchers recorded single dopamine neurons [<a href="#ref-7">7</a>]. Three cases stand out [<a href="#ref-7">7</a>]:</p>
+<ol>
+<li><strong>Juice with no warning.</strong> The neuron fires when the juice arrives: a pleasant surprise.</li>
+<li><strong>Juice after the light, once the monkey has learned the pattern.</strong> The neuron fires at the light, not at the juice. The juice was fully predicted, so it carries no news.</li>
+<li><strong>Light, but no juice.</strong> The neuron's activity dips at exactly the moment the juice should have come.</li>
+</ol>
+<p>The intuition: a reward you fully expected teaches you nothing. Only the surprise does.</p>
+<figure><img src="how-humans-learn/fig2-prediction-error.svg" alt="Schematic of dopamine prediction-error responses before learning, after learning, and when an expected reward is omitted." loading="lazy"><figcaption>Figure 1. The three cases above. (Schematic drawn by me, following the three cases in Figure 1 of [<a href="#ref-7">7</a>]; not the recorded data.)</figcaption></figure>
+<p><strong>Why this matters for humans.</strong> Nobody has to label your experiences. You make a prediction, the world answers, and the gap is the lesson. This is what lets learning happen without a teacher.</p>
+<p><strong>One thing I want to keep.</strong> The correction comes from <em>outside</em> the learner. You can't decide on your own that the reward arrived. <em>(My view: this turns out to be the most important property in the whole entry.)</em></p>
+<h2>4. Choice: curiosity picks the next lesson</h2>
+<p>A learner that only waits for experience to arrive learns slowly. Humans and other animals go looking.</p>
+<p>Gottlieb and Oudeyer describe how animals actively question their environments with self-generated strategies, while lab experiments usually impose tasks from outside [<a href="#ref-8">8</a>]. They separate two modes: <strong>sampling</strong>, which reduces uncertainty within a familiar task, and <strong>search</strong>, which explores open-endedly to find new tasks [<a href="#ref-8">8</a>]. They argue these curiosity-driven preferences help animals cope in large environments where rewards are sparse and not known in advance [<a href="#ref-8">8</a>].</p>
+<p>What does curiosity aim for? One answer, from Oudeyer, Kaplan and Hafner, is <strong>learning progress</strong>. They built a robot that seeks situations where it improves fastest, which pushed it toward situations that were neither too predictable nor too unpredictable [<a href="#ref-9">9</a>]. The robot first spent time on easy situations, then moved to harder ones, and avoided situations where nothing could be learned [<a href="#ref-9">9</a>]. Its developmental stages organised themselves, with no one designing the curriculum [<a href="#ref-9">9</a>].</p>
+<figure><img src="how-humans-learn/fig3-learning-progress.svg" alt="Three error curves: too hard stays high, too easy stays low, just right falls; curiosity aims at the falling curve." loading="lazy"><figcaption>Figure 2. Learning progress is how fast your own error is falling. Too easy and too hard both give zero progress. (Schematic, drawn by me.)</figcaption></figure>
+<p>This connects neatly back to Section 3: learning progress is just prediction error <em>changing over time</em>. Curiosity reads your own error curve. <em>(My view.)</em></p>
+<p><strong>Why this matters for humans.</strong> In cognitive terms, Gureckis and Markant report that controlling your own experience lets you focus on information you don't yet have, reach information that passive observation can't, and may improve memory [<a href="#ref-10">10</a>]. They also note humans are not always optimal at it [<a href="#ref-10">10</a>].</p>
+<h2>5. Memory: a fast system and a slow system</h2>
+<p>Here is a problem I hadn't appreciated before reading this literature. If you learn new things quickly by changing the same connections that hold your old knowledge, the new learning overwrites the old.</p>
+<p><strong>Complementary learning systems theory</strong> says the brain avoids this with two memory systems that learn at different speeds [<a href="#ref-11">11</a>]:</p>
+<ul>
+<li><strong>The hippocampus</strong> learns fast. It is described as a sparse system that stores individual episodes rapidly and keeps them separate from each other [<a href="#ref-12">12</a>].</li>
+<li><strong>The neocortex</strong> learns slowly. It is a distributed, overlapping system that integrates across many episodes to extract general structure [<a href="#ref-12">12</a>].</li>
+<li><strong>Replay</strong> connects them. The hippocampus helps reinstate recent memories in the neocortex, where learning is gradual and interleaved with everything else [<a href="#ref-11">11</a>].</li>
+</ul>
+<p>The replay part has direct evidence. Wilson and McNaughton recorded rats' hippocampal cells during a spatial task: cells that fired together at the same location fired together more in the slow-wave sleep afterwards than in the sleep before [<a href="#ref-13">13</a>]. In their words, information acquired while awake is re-expressed during sleep, as consolidation theories predict [<a href="#ref-13">13</a>]. (This is in rats, and shows reactivation, not the full transfer.)</p>
+<figure><img src="how-humans-learn/fig4-fast-slow-memory.svg" alt="Diagram: new experience is captured at once by the hippocampus, replayed slowly into the neocortex, with a shortcut straight to the neocortex when it fits existing knowledge." loading="lazy"><figcaption>Figure 3. Two memory systems. The fast store holds new experience; replay feeds it into the slow store gradually. (Schematic, drawn by me.)</figcaption></figure>
+<p>There is an important twist. Tse et al. showed that consolidation can happen <strong>very quickly</strong> if the new information fits an existing "schema", a structure of related knowledge [<a href="#ref-14">14</a>]. Rats that had built up a schema of flavour–place associations learned new ones in a single trial, and those memories soon stopped depending on the hippocampus [<a href="#ref-14">14</a>]. The updated theory accounts for this: neocortical learning can be fast for information that fits what is already known, and replay can weight experiences by current goals [<a href="#ref-15">15</a>].</p>
+<p><strong>Why this matters for humans.</strong> It is how we keep learning for a whole lifetime without each new thing wiping out the last. It also means <strong>what you already know sets how fast you can learn more.</strong> <em>(My view: this is the best argument I've seen for why foundations matter.)</em></p>
+<h2>6. Plasticity: how much to change</h2>
+<p>The fourth problem is quieter. Even with two memory systems, each connection still needs to decide how much to change.</p>
+<p>The answer is that <strong>the amount a connection can change is itself learned.</strong> Abraham and Bear called this <strong>metaplasticity</strong>, "the plasticity of synaptic plasticity": a synapse's history of activity sets how plastic it is now [<a href="#ref-16">16</a>]. A related hypothesis is that brains protect old knowledge by reducing the plasticity of connections that were important for earlier tasks [<a href="#ref-17">17</a>].</p>
+<figure><img src="how-humans-learn/fig5-metaplasticity.svg" alt="Two connections receive the same input; the one with an important history changes little, the new one changes a lot." loading="lazy"><figcaption>Figure 4. The learning rate is not one global number; each connection's past sets its own. (Schematic, drawn by me; the real mechanisms are more varied.)</figcaption></figure>
+<p><strong>Why this matters for humans.</strong> It lets us be stable and flexible at once: old skills stay put while new ones form. <em>(My view: I find this the least intuitive of the five, and the one I most want to read more about.)</em></p>
+<h2>7. Learning to learn</h2>
+<p>The last problem: does learning itself get cheaper with experience? For primates, clearly yes. Here there is a behaviour, a proposed mechanism tested on that same behaviour, and a link back to curiosity.</p>
+<p><strong>The behaviour: Harlow's monkeys.</strong> Harlow gave monkeys a long series of simple choice problems between two objects, one of them rewarded, with a new pair of objects in each problem [<a href="#ref-18">18</a>, <a href="#ref-19">19</a>]. On the first problems, the monkeys needed many tries of trial and error. After many problems, the first try on a new pair was still a guess, but from the second try on they were nearly always right [<a href="#ref-18">18</a>, <a href="#ref-19">19</a>]. They hadn't learned the answer to any one problem. They had learned how to solve <em>this kind</em> of problem: if your pick was rewarded, stick with it; if not, switch. <em>(That rule is my paraphrase, not Harlow's wording.)</em> Harlow called this forming a <strong>learning set</strong> [<a href="#ref-18">18</a>].</p>
+<figure><img src="how-humans-learn/fig6-learning-to-learn.svg" alt="Two learning curves within a problem: early problems rise slowly, later problems jump to near-perfect after one try." loading="lazy"><figcaption>Figure 5. Learning to learn. (Schematic of the learning-set pattern, drawn by me; not Harlow's data.)</figcaption></figure>
+<p><strong>A mechanism: slow learning builds a fast learner.</strong> Wang et al. proposed how the brain could do this, and tested it on a version of Harlow's task [<a href="#ref-20">20</a>]. In their theory, the slow, dopamine-driven learning from Section 3 gradually tunes the connections of the prefrontal cortex until its moment-to-moment activity works as a second, fast learning system [<a href="#ref-20">20</a>]. They trained a network on many Harlow-style problems, with pictures in place of objects, then <strong>froze its weights</strong>. It still learned each new problem in a single trial [<a href="#ref-20">20</a>]. Since the weights couldn't change, the fast learning had to be running in the network's activity, not in the slow algorithm that trained it [<a href="#ref-20">20</a>]. This is a computational theory consistent with the data, not proof of how the brain does it.</p>
+<p>So Harlow shows <em>what</em> learning to learn looks like; Wang et al. offer one account of <em>how</em>.</p>
+<p><strong>Where curiosity comes back in.</strong> Learning to learn is not only about solving tasks faster. It also improves <em>how you explore</em>, at two levels:</p>
+<ul>
+<li><strong>Exploring within a task.</strong> In Harlow's task, the first try on a new pair is pure exploration: its only job is to find out which object pays. In Wang et al.'s model, the learned fast learner handled the trade-off between exploring and exploiting by itself; in a simpler two-option task, it tried both options before settling on the better one [<a href="#ref-20">20</a>]. The exploration strategy was itself learned, not built in.</li>
+<li><strong>Choosing what to learn next.</strong> Curiosity driven by learning progress (Section 4) means preferring tasks where you are improving fastest [<a href="#ref-8">8</a>, <a href="#ref-9">9</a>]. To do that, a learner has to keep track of its own learning. <em>(My view.)</em> That is learning about your learning, which is the same territory as learning to learn.</li>
+</ul>
+<p><em>(The two-level framing is my view.)</em></p>
+<p><strong>Why this matters for humans.</strong> Skill compounds in two ways: you learn each new thing faster, and you get better at picking what to learn. Your fifth programming language takes days, not months, partly because you know which parts to explore first. <em>(Everyday example; my view.)</em></p>
+<h2>8. How it fits together</h2>
+<p>Sections 3–7 each described one piece. This section connects them.</p>
+<p>My first instinct was a single loop: predict, choose, get corrected, store, consolidate, learn faster, repeat. But the brain doesn't run every step every time. Some pieces act every moment, some mostly during rest, some over years. So I'm borrowing the shape of an idea from Doya, who proposed that a few signals broadcast across the brain set the "knobs" of learning [<a href="#ref-21">21</a>]. I'm not using his specific mapping, only the structure: a few <strong>modules</strong> hold knowledge, a few <strong>signals</strong> decide which module updates and by how much, and each runs on its own <strong>timescale</strong>. <em>(My framing, inspired by [<a href="#ref-21">21</a>].)</em></p>
+<p>Every piece from Sections 3–7 turns out to be either a module or a signal:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>Section</th>
+<th>Role</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fast learner</td>
+<td>7</td>
+<td>Module</td>
+<td>predicts, chooses and adapts within a task [<a href="#ref-20">20</a>]</td>
+</tr>
+<tr>
+<td>Fast store (hippocampus)</td>
+<td>5</td>
+<td>Module</td>
+<td>captures each new episode at once, kept separate [<a href="#ref-11">11</a>, <a href="#ref-12">12</a>]</td>
+</tr>
+<tr>
+<td>Slow store (neocortex)</td>
+<td>5</td>
+<td>Module</td>
+<td>holds general knowledge, built slowly [<a href="#ref-11">11</a>, <a href="#ref-12">12</a>]</td>
+</tr>
+<tr>
+<td>Surprise</td>
+<td>3</td>
+<td>Signal</td>
+<td>marks <em>what</em> was wrong and should change [<a href="#ref-7">7</a>]</td>
+</tr>
+<tr>
+<td>Learning progress</td>
+<td>4</td>
+<td>Signal</td>
+<td>surprise tracked over time; points to <em>where</em> to go next [<a href="#ref-9">9</a>]</td>
+</tr>
+<tr>
+<td>Plasticity</td>
+<td>6</td>
+<td>Signal</td>
+<td>sets <em>how much</em> each connection may change [<a href="#ref-16">16</a>]</td>
+</tr>
+<tr>
+<td>Rest</td>
+<td>5</td>
+<td>Signal</td>
+<td>sets <em>when</em> replay moves recent episodes into the slow store [<a href="#ref-13">13</a>]</td>
+</tr>
+</tbody>
+</table></div>
+<figure><img src="how-humans-learn/fig-framework.svg" alt="Framework: three modules (fast learner, fast store, slow store), four signals (surprise, learning progress, plasticity, rest), and four timescales (moment, task, night, lifetime)." loading="lazy"><figcaption>Figure 6. Sections 3–7 as one system: modules, the signals that update them, and the timescales they run on. (My synthesis, inspired by [<a href="#ref-21">21</a>].)</figcaption></figure>
+<p><strong>One example, start to finish.</strong> Learning to drive, as an illustration. <em>(My example; the steps follow Sections 3–7, not a study of driving.)</em></p>
+<ol>
+<li><strong>Surprise.</strong> In your first lesson you brake expecting to stop at the line and stop a metre short. The gap between what you predicted and what happened marks braking as the thing to fix (Section 3).</li>
+<li><strong>The fast learner adjusts.</strong> On the next stop you brake later. Nothing slow has changed yet; you are adapting within the task (Section 7).</li>
+<li><strong>The fast store keeps the episode.</strong> That evening you can still recall the stop you misjudged, though it happened only once (Section 5).</li>
+<li><strong>Learning progress picks the next lesson.</strong> Empty car parks are now boring and motorways are still overwhelming, so you practise roundabouts, where your errors are falling fastest (Section 4).</li>
+<li><strong>Rest triggers consolidation.</strong> Over the following nights, replay folds the day's episodes into the slow store, mixed in with everything else you know (Section 5).</li>
+<li><strong>Plasticity protects what has settled.</strong> After months, steering is automatic and hard to disturb, while parallel parking is still changing. Each skill's history sets how easily it changes (Section 6).</li>
+<li><strong>Learning to learn pays off.</strong> Years later you rent a car in another country and adapt in minutes, not weeks. Your slow store has a schema for driving that new details slot into quickly (Section 5), and your fast learner already knows how to explore an unfamiliar car (Section 7).</li>
+</ol>
+<p><strong>What this picture explains.</strong> <em>(This list is my view.)</em></p>
+<ol>
+<li><strong>Not everything runs all the time.</strong> A fully expected outcome produces almost no surprise (Section 3), so little changes, and replay mostly waits for rest. Modules switch on when a signal fires, not in a fixed order.</li>
+<li><strong>The pieces depend on each other.</strong> Learning progress is built from surprise. Replay decides what reaches the slow store; plasticity decides how hard it lands. The slow store in turn shapes what the fast learner predicts and how quickly new things can be learned [<a href="#ref-14">14</a>, <a href="#ref-15">15</a>]. Take one piece away and others suffer: without the fast store there is nothing to replay, and without surprise there is no progress to track.</li>
+<li><strong>A learner can work with very few pieces.</strong> AlphaZero learned chess, shogi and Go from random play, given only the rules, by playing against itself, and beat a world-champion program in each [<a href="#ref-22">22</a>]. In this picture it has one module (its network), one signal it can't fake (who won) and one timescale. Its other knobs, such as how much to explore and how fast to learn, are set by its engineers before training. <em>(Unverified: I haven't checked the paper's exact settings.)</em> It is the textbook self-learner, just not a lifelong one.</li>
+<li><strong>The real difference is who turns the knobs.</strong> In humans, the learner's own state turns them: surprise, progress, rest. In most AI systems, an engineer sets them as fixed settings.</li>
+</ol>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th></th>
+<th>What it needs</th>
+<th>AlphaZero</th>
+<th>Humans</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Core learning</strong></td>
+<td>a module that changes, a signal from something it can't fake, a way to choose its own experience</td>
+<td>Yes, in one game</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><strong>Lifelong learning</strong></td>
+<td>fast and slow stores, signals the learner sets for itself, learning to learn</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table></div>
+<p>That gives the working definition I'll carry forward:</p>
+<blockquote>
+<p><strong>Self-learning is when a learner chooses its own experiences, is corrected by something it can't fake, and turns those corrections into lasting change. It becomes <em>lifelong</em> self-learning when it can keep doing this indefinitely, without losing what it already knows, and gets better at learning as it goes.</strong></p>
+</blockquote>
+<p>"Something it can't fake" is doing real work in that sentence. In AlphaZero's self-play the opponent is itself, but the <strong>rules</strong> decide who won, and it can't change them. <em>(My view.)</em></p>
+<h2>9. What I'm taking from this</h2>
+<p><em>(This whole section is my view.)</em></p>
+<p>I'll save the detail for the next entry, but three ideas already stand out.</p>
+<ol>
+<li><strong>The correction must come from outside the learner.</strong> A system that grades its own answers can drift, because it can fake the grade. Humans can't fake whether the reward came.</li>
+<li><strong>The learner must turn its own knobs.</strong> The question I'll ask of any AI system is: which signals does it set for itself, and which does an engineer set for it?</li>
+<li><strong>Consolidation looks like the biggest gap in today's language models.</strong> They learn quickly in context and slowly in their weights, but nothing reliably moves what was learned in context into the weights. Adapting a trained LLM to new data without losing old knowledge is still an open problem [<a href="#ref-5">5</a>].</li>
+</ol>
+<p>Many of the human mechanisms already have AI versions, which is encouraging:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Human mechanism</th>
+<th>Existing AI idea</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Hippocampal replay</td>
+<td>Experience replay in DQN, explicitly inspired by the hippocampus [<a href="#ref-23">23</a>]</td>
+</tr>
+<tr>
+<td>Protecting important connections</td>
+<td>Elastic Weight Consolidation [<a href="#ref-17">17</a>]</td>
+</tr>
+<tr>
+<td>Curiosity / learning progress</td>
+<td>Automated curricula driven by learning progress [<a href="#ref-24">24</a>]; LLM agents that predict their own progress [<a href="#ref-25">25</a>]</td>
+</tr>
+<tr>
+<td>A fast learner inside a slow one</td>
+<td>Evidence that trained Transformers learn in context by something like gradient descent [<a href="#ref-26">26</a>]</td>
+</tr>
+</tbody>
+</table></div>
+<p>What I haven't seen is a system that has <strong>all the modules and sets its own signals</strong>, without an engineer turning the knobs. That is the question for the next entry.</p>
+<h2>10. Where this could matter</h2>
+<p><strong>For humans.</strong></p>
+<ul>
+<li><strong>Personalised teaching.</strong> Clement et al. built a tutoring system that picks each child's next exercise by that child's learning progress, the curiosity signal from Section 4 [<a href="#ref-27">27</a>]. In a study with 400 schoolchildren aged 7–8, more children reached the harder levels than with a sequence designed by experts [<a href="#ref-27">27</a>].</li>
+<li><strong>How I study.</strong> Work at the edge of what I can do, rest between sessions, and expect the first few problems in any new area to be slow. <em>(My view, drawn from Sections 4, 5 and 7.)</em></li>
+</ul>
+<p><strong>For AI.</strong> <em>(Most rows are speculative; the evidence column says what exists today.)</em></p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Use case</th>
+<th>What exists today</th>
+<th>What it would need</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Models that stay current after training</td>
+<td>Adapting without forgetting is still unsolved [<a href="#ref-5">5</a>]</td>
+<td>A fast store plus consolidation (Section 5) <em>(Speculative.)</em></td>
+</tr>
+<tr>
+<td>Assistants that learn one person over months</td>
+<td>Memory libraries that sit outside the model [<a href="#ref-4">4</a>]</td>
+<td>Consolidation, with old knowledge protected (Sections 5–6) <em>(Speculative.)</em></td>
+</tr>
+<tr>
+<td>Robots in new places</td>
+<td>A curiosity-driven robot organised its own developmental stages [<a href="#ref-9">9</a>]</td>
+<td>Learning progress (Section 4)</td>
+</tr>
+<tr>
+<td>Research agents</td>
+<td>The AI Scientist automates a full research pipeline, and one of its papers passed peer review at a workshop [<a href="#ref-28">28</a>]</td>
+<td>Learning across projects, not just within one (Section 7) <em>(My view.)</em></td>
+</tr>
+<tr>
+<td>Learning from very little data</td>
+<td>Humans solve a new problem after one try once they have a learning set (Section 7)</td>
+<td>A fast learner built by slow learning [<a href="#ref-20">20</a>] <em>(Speculative.)</em></td>
+</tr>
+</tbody>
+</table></div>
+<p>Every row comes with the risk from Section 1: a system that changes itself needs a correction it can't fake [<a href="#ref-6">6</a>]. <em>(My view.)</em></p>
+<h2>11. What I left out, and open questions</h2>
+<p><strong>Left out on purpose.</strong></p>
+<ul>
+<li><strong>Learning from other humans</strong> (imitation, teaching). I'm treating other humans as part of the environment that corrects the learner, not as a separate mechanism. <em>(My view.)</em></li>
+<li><strong>Development.</strong> How learning changes from childhood to adulthood.</li>
+<li><strong>Emotion, attention and sleep in detail.</strong> Each deserves its own entry.</li>
+</ul>
+<p><strong>Open questions.</strong></p>
+<ul>
+<li>Is "can't fake" too strict? Some AI systems use a separate judge model that is hard, but not impossible, to fool. Where is the line?</li>
+<li>Is a fast store actually needed, or could a very long context with periodic consolidation do the same job? <em>(Speculative.)</em></li>
+<li>Can a system consolidate its own experience into its weights <em>safely</em>, without drifting away from what it was meant to do?</li>
+</ul>
+<h2>12. Next</h2>
+<p>Take the modules, signals and definition, and test current AI systems against them, one step at a time: which steps each system does itself, and which an engineer still does. Then look at self-made curricula and models improving their successors through this lens.</p>
+  <h2 id="references">References</h2>
+  <ol class="refs">
+    <li id="ref-1">Yuan W, Pang RY, Cho K, et al. <em>Self-Rewarding Language Models.</em> ICML 2024. <a href="https://arxiv.org/abs/2401.10020">arXiv:2401.10020</a></li>
+    <li id="ref-2">Zhang J, Hu S, Lu C, Lange R, Clune J. <em>Darwin Gödel Machine: Open-Ended Evolution of Self-Improving Agents.</em> ICLR 2026. <a href="https://arxiv.org/abs/2505.22954">arXiv:2505.22954</a></li>
+    <li id="ref-3"><em>Google DeepMind's new AI agent cracks real-world problems better than humans can.</em> MIT Technology Review, 14 May 2025. <a href="https://www.technologyreview.com/2025/05/14/1116438/google-deepminds-new-ai-uses-large-language-models-to-crack-real-world-problems/">link</a></li>
+    <li id="ref-4"><em>A Survey of Self-Evolving Agents: What, When, How, and Where to Evolve on the Path to Artificial Super Intelligence.</em> TMLR 2026. <a href="https://arxiv.org/abs/2507.21046">arXiv:2507.21046</a></li>
+    <li id="ref-5">Shi H, Xu Z, Wang H, et al. <em>Continual Learning of Large Language Models: A Comprehensive Survey.</em> 2024. <a href="https://arxiv.org/abs/2404.16789">arXiv:2404.16789</a></li>
+    <li id="ref-6"><em>Frontier AI Risk Management Framework in Practice: A Risk Analysis Technical Report v1.5.</em> 2026. <a href="https://arxiv.org/abs/2602.14457">arXiv:2602.14457</a></li>
+    <li id="ref-7">Schultz W, Dayan P, Montague PR. <em>A Neural Substrate of Prediction and Reward.</em> Science 275(5306):1593–1599, 1997. PMID 9054347. <a href="https://www.gatsby.ucl.ac.uk/~dayan/papers/sdm97.html">link</a></li>
+    <li id="ref-8">Gottlieb J, Oudeyer P-Y. <em>Towards a neuroscience of active sampling and curiosity.</em> Nature Reviews Neuroscience, 2018. <a href="https://doi.org/10.1038/s41583-018-0078-0">doi.org/10.1038/s41583-018-0078-0</a></li>
+    <li id="ref-9">Oudeyer P-Y, Kaplan F, Hafner VV. <em>Intrinsic Motivation Systems for Autonomous Mental Development.</em> IEEE Transactions on Evolutionary Computation 11(2), 2007. <a href="https://infoscience.epfl.ch/record/115468">infoscience.epfl.ch/record/115468</a></li>
+    <li id="ref-10">Gureckis TM, Markant DB. <em>Self-Directed Learning: A Cognitive and Computational Perspective.</em> Perspectives on Psychological Science 7(5):464–481, 2012. <a href="https://www.gureckislab.org/papers/ref/gureckis2012self">link</a></li>
+    <li id="ref-11">McClelland JL, McNaughton BL, O'Reilly RC. <em>Why there are complementary learning systems in the hippocampus and neocortex.</em> Psychological Review 102(3):419–457, 1995. <a href="https://doi.org/10.1037/0033-295X.102.3.419">doi.org/10.1037/0033-295X.102.3.419</a></li>
+    <li id="ref-12">O'Reilly RC, Bhattacharyya R, Howard MD, Ketz N. <em>Complementary Learning Systems.</em> Cognitive Science, 2011. <a href="https://doi.org/10.1111/j.1551-6709.2011.01214.x">link</a></li>
+    <li id="ref-13">Wilson MA, McNaughton BL. <em>Reactivation of hippocampal ensemble memories during sleep.</em> Science 265(5172):676–679, 1994. <a href="https://doi.org/10.1126/science.8036517">doi.org/10.1126/science.8036517</a></li>
+    <li id="ref-14">Tse D, Langston RF, Kakeyama M, et al. <em>Schemas and memory consolidation.</em> Science 316(5821):76–82, 2007. <a href="https://doi.org/10.1126/science.1135935">doi.org/10.1126/science.1135935</a></li>
+    <li id="ref-15">Kumaran D, Hassabis D, McClelland JL. <em>What Learning Systems do Intelligent Agents Need? Complementary Learning Systems Theory Updated.</em> Trends in Cognitive Sciences 20(7):512–534, 2016. <a href="https://doi.org/10.1016/j.tics.2016.05.004">doi.org/10.1016/j.tics.2016.05.004</a></li>
+    <li id="ref-16">Abraham WC, Bear MF. <em>Metaplasticity: the plasticity of synaptic plasticity.</em> Trends in Neurosciences 19(4):126–130, 1996. PMID 8658594. <a href="https://ourarchive.otago.ac.nz/esploro/outputs/journalArticle/Metaplasticity-The-plasticity-of-synaptic-plasticity/9926517800801891">link</a></li>
+    <li id="ref-17">Kirkpatrick J, Pascanu R, Rabinowitz N, et al. <em>Overcoming catastrophic forgetting in neural networks.</em> PNAS 114(13):3521–3526, 2017. <a href="https://doi.org/10.1073/pnas.1611835114">doi.org/10.1073/pnas.1611835114</a></li>
+    <li id="ref-18">Harlow HF. <em>The formation of learning sets.</em> Psychological Review 56(1):51–65, 1949.</li>
+    <li id="ref-19">Medin DL. <em>Role of reinforcement in discrimination learning set in monkeys.</em> Psychological Bulletin 77(5), 1972. <a href="https://groups.psych.northwestern.edu/medin/documents/Medin1972PsychBull.pdf">link</a></li>
+    <li id="ref-20">Wang JX, Kurth-Nelson Z, Kumaran D, et al. <em>Prefrontal cortex as a meta-reinforcement learning system.</em> Nature Neuroscience 21, 2018. <a href="https://doi.org/10.1038/s41593-018-0147-8">doi.org/10.1038/s41593-018-0147-8</a></li>
+    <li id="ref-21">Doya K. <em>Metalearning and neuromodulation.</em> Neural Networks 15(4–6):495–506, 2002. <a href="https://doi.org/10.1016/S0893-6080(02)00044-8">doi.org/10.1016/S0893-6080(02)00044-8</a></li>
+    <li id="ref-22">Silver D, Hubert T, Schrittwieser J, et al. <em>A general reinforcement learning algorithm that masters chess, shogi, and Go through self-play.</em> Science 362(6419):1140–1144, 2018. <a href="https://doi.org/10.1126/science.aar6404">doi.org/10.1126/science.aar6404</a></li>
+    <li id="ref-23">Mnih V, Kavukcuoglu K, Silver D, et al. <em>Human-level control through deep reinforcement learning.</em> Nature, 2015. <a href="https://doi.org/10.1038/nature14236">doi.org/10.1038/nature14236</a></li>
+    <li id="ref-24">Graves A, Bellemare MG, Menick J, Munos R, Kavukcuoglu K. <em>Automated Curriculum Learning for Neural Networks.</em> ICML 2017. <a href="https://arxiv.org/abs/1704.03003">arXiv:1704.03003</a></li>
+    <li id="ref-25">Gaven L, et al. <em>MAGELLAN: Metacognitive predictions of learning progress guide autotelic LLM agents in large goal spaces.</em> ICML 2025. <a href="https://arxiv.org/abs/2502.07709">arXiv:2502.07709</a></li>
+    <li id="ref-26">von Oswald J, Niklasson E, Randazzo E, et al. <em>Transformers learn in-context by gradient descent.</em> ICML 2023. <a href="https://arxiv.org/abs/2212.07677">arXiv:2212.07677</a></li>
+    <li id="ref-27">Clement B, Roy D, Oudeyer P-Y, Lopes M. <em>Multi-Armed Bandits for Intelligent Tutoring Systems.</em> Journal of Educational Data Mining 7(2):20–48, 2015. <a href="https://arxiv.org/abs/1310.3174">arXiv:1310.3174</a></li>
+    <li id="ref-28">Lu C, et al. <em>Towards end-to-end automation of AI research.</em> Nature 651, 2026. <a href="https://www.cs.ubc.ca/news/2026/03/ai-scientist">www.cs.ubc.ca/news/2026/03/ai-scientist</a></li>
+  </ol>
+</article>
+</main>
+<hr>
+<footer>© 2026 Karanvir Sidana</footer>
+</div>
+</body>
+</html>

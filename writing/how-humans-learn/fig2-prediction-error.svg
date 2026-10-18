@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" font-family="IBM Plex Sans, Helvetica, Arial, sans-serif">
+  <title>Prediction error: what dopamine neurons appear to signal</title>
+  <rect x="0" y="0" width="760" height="400" rx="14" fill="#f7f7f4"/>
+
+  <!-- event columns -->
+  <g stroke="#bbb" stroke-dasharray="4 4" stroke-width="1.5">
+    <line x1="330" y1="40" x2="330" y2="350"/>
+    <line x1="560" y1="40" x2="560" y2="350"/>
+  </g>
+  <text x="330" y="32" text-anchor="middle" font-size="13" font-weight="600" fill="#2f6fdf">light (cue)</text>
+  <text x="560" y="32" text-anchor="middle" font-size="13" font-weight="600" fill="#3a9a5b">juice (reward)</text>
+
+  <g font-size="13.5" fill="#1d1d1b">
+    <text x="24" y="92" font-weight="600">Before learning</text>
+    <text x="24" y="110" fill="#555" font-size="12">reward is a surprise</text>
+    <text x="24" y="192" font-weight="600">After learning</text>
+    <text x="24" y="210" fill="#555" font-size="12">cue predicts reward</text>
+    <text x="24" y="292" font-weight="600">Reward omitted</text>
+    <text x="24" y="310" fill="#555" font-size="12">expected, didn't come</text>
+  </g>
+
+  <g fill="none" stroke="#d9822b" stroke-width="2.5" stroke-linejoin="round">
+    <!-- row 1: burst at reward -->
+    <polyline points="200,100 545,100 552,62 560,58 568,66 576,100 720,100"/>
+    <!-- row 2: burst at cue, flat at reward -->
+    <polyline points="200,200 315,200 322,162 330,158 338,166 346,200 720,200"/>
+    <!-- row 3: burst at cue, dip at reward time -->
+    <polyline points="200,300 315,300 322,262 330,258 338,266 346,300 548,300 556,326 572,330 584,300 720,300"/>
+  </g>
+
+  <g font-size="12" fill="#8a5a22" text-anchor="middle">
+    <text x="600" y="64">+ error</text>
+    <text x="372" y="164">+ error</text>
+    <text x="630" y="188">≈ 0 (fully expected)</text>
+    <text x="372" y="264">+ error</text>
+    <text x="620" y="338">− error</text>
+  </g>
+
+  <text x="24" y="380" font-size="12" fill="#777">Schematic, not data. Activity jumps for better-than-expected, stays flat for as-expected, dips for worse-than-expected.</text>
+</svg>
