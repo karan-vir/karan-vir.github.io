@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Can a Small Model Choose Its Own Training Problems? A Ten-Seed Test on Addition · Karanvir Sidana</title>
+<meta name="description" content="A research-journal entry: does a small model learn more by choosing its own training problems? A ten-seed test on addition.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="site">
+  <p class="site-name"><a href="../index.html">Karanvir Sidana</a></p>
+  <nav class="top" aria-label="Main"><a href="../index.html">About</a><a href="../research.html">Research</a><a href="../writing.html" aria-current="page">Writing</a></nav>
+</header>
+<main>
+<article class="post">
+  <a class="back" href="../writing.html">← Writing</a>
+  <p class="eyebrow"><span class="date">2026-11-14</span> · Method / experiment · <a href="https://github.com/karan-vir/self-curriculum/tree/372ff14">code at commit 372ff14</a> <a href="#ref-8">[8]</a></p>
+  <h1>Can a Small Model Choose Its Own Training Problems? A Ten-Seed Test on Addition</h1>
+<h2>1. Question</h2>
+<p>In the last entry I said I wanted to work on self-made curricula. This is the first experiment. It asks one narrow thing:</p>
+<p><strong>If a small model picks the difficulty of its own training problems, does it learn more from the same number of examples than it does from a fixed mix?</strong></p>
+<p>Self-training loops generate answers, keep the ones a checker accepts, fine-tune on them and repeat [<a href="#ref-1">1</a>, <a href="#ref-2">2</a>]. Which problems go into that loop decides how much each kept example is worth. A model that steers toward problems it only sometimes solves should waste less on problems it already knows or can't yet touch. That is the guess I tested. <em>(The guess is my view.)</em></p>
+<p>The short answer: self-curriculum beats a uniform mix, but a fixed mix of only the hardest lengths does at least as well, so adapting does not explain the win. Sections 4 and 5 give the numbers.</p>
+<h2>2. Background</h2>
+<p>The setup sits between three lines of work.</p>
+<ul>
+<li><strong>Self-training on checked answers.</strong> STaR fine-tunes a model on its own rationales that reached the correct answer, and repeats; for questions it gets wrong, it retries with the correct answer as a hint [<a href="#ref-1">1</a>]. ReST-EM generates samples, filters them with a binary reward, fine-tunes on those that pass, and repeats, tested on MATH and APPS with PaLM-2 [<a href="#ref-2">2</a>]. My arms A, B and C are this loop without rationales: the model's reply is only the number.</li>
+<li><strong>Curricula.</strong> Bengio et al. introduced curriculum learning, training on easier examples first [<a href="#ref-3">3</a>]. Teacher-Student Curriculum Learning has a teacher choose subtasks that favour the student's fastest-rising learning curve, and tested decimal addition with an LSTM among other tasks [<a href="#ref-4">4</a>]. My selection rule is simpler: a fixed accuracy band, with no measure of progress.</li>
+<li><strong>Models proposing their own tasks.</strong> Absolute Zero has one model propose and solve its own tasks, with a code executor checking both [<a href="#ref-5">5</a>]. Here the model picks only the difficulty, not the problems.</li>
+</ul>
+<p>Arithmetic is a convenient testbed because format and length matter a lot for small transformers. Lee et al. found that output format and intermediate steps change how well small transformers learn addition, and that models trained on some lengths did not reliably handle unseen ones [<a href="#ref-6">6</a>]. Quirke &amp; Barez studied a one-layer transformer on addition and found a hard case in columns that sum to 9, where a carry's fate depends on the columns to the right [<a href="#ref-7">7</a>].</p>
+<h2>3. Mechanism</h2>
+<h3>3.1 Testbed</h3>
+<p>Add two N-digit integers, N from 2 to 10, on Qwen2.5-0.5B-Instruct with LoRA. Difficulty is set exactly and every answer is checked exactly, so there are no labels and no judge model. The prompt is fixed:</p>
+<pre><code>Compute the sum. Reply with the number only.
+23821 + 28970 =
+</code></pre>
+<p>It is wrapped in Qwen's chat template. A training example is the prompt plus the model's own checker-verified reply and the end-of-turn token. The loss is on the answer tokens only.</p>
+<p><strong>Held-out set.</strong> 1,800 problems (200 per length), drawn once with seed 1234 and frozen. Greedy decoding, 16 new tokens. Any training problem that matches a held-out problem is rejected, ignoring operand order.</p>
+<p><strong>Untrained baseline</strong> (float16, Apple MPS): 44.0% (792 of 1,800), falling from 91.5% at 2 digits to 3.0% at 10. In the training precision the same model scores 43.9%, which is the round-0 figure used for every arm. The edge is at 5 digits (58.5%) and 6 digits (39.5%).</p>
+<h3>3.2 One round</h3>
+<p>Every arm runs the same loop for 10 rounds, starting from the same untrained model:</p>
+<ol>
+<li>Pick which lengths to draw problems from (the only step that differs between arms).</li>
+<li>Draw problems at those lengths. Sample 4 tries per problem at temperature 0.8.</li>
+<li>Keep the first correct try per problem, until 512 examples are collected.</li>
+<li>One LoRA epoch on those 512 examples, with a fresh optimizer.</li>
+<li>Evaluate on the frozen held-out set.</li>
+</ol>
+<p>Shared settings, from <code>src/selfcurr/config.py</code> [<a href="#ref-8">8</a>]:</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>LoRA</td>
+<td>rank 16, alpha 32, dropout 0.05</td>
+</tr>
+<tr>
+<td>Learning rate, batch, epochs per round</td>
+<td>2e-4, 16, 1</td>
+</tr>
+<tr>
+<td>Examples per round</td>
+<td>512</td>
+</tr>
+<tr>
+<td>Tries per problem, temperature</td>
+<td>4, 0.8</td>
+</tr>
+<tr>
+<td>Draw limit per length</td>
+<td>50 batches of 64 (Arm C: 200; it never needed more than 38)</td>
+</tr>
+<tr>
+<td>Seeds</td>
+<td>0–9</td>
+</tr>
+</tbody>
+</table></div>
+<h3>3.3 The selection rule (Arm A)</h3>
+<p>Each round Arm A probes 64 fresh problems at each length with greedy decoding, then trains on the lengths whose accuracy lies in the 30–70% band. If none qualify, it takes the single length closest to 50%. This is the code [<a href="#ref-8">8</a>]:</p>
+<pre><code class="language-python">def select_edge(accuracy, low=0.3, high=0.7):
+    edge = sorted(d for d, acc in accuracy.items() if low &lt;= acc &lt;= high)
+    if edge:
+        return edge
+    mid = (low + high) / 2
+    # round so float noise (|0.8-0.5| vs |0.2-0.5|) doesn't break ties
+    return [min(accuracy, key=lambda d: (round(abs(accuracy[d] - mid), 9), d))]
+</code></pre>
+<p>The 512 examples are spread as evenly as possible over the chosen lengths. I raised the probe from 32 to 64 problems per length after the baseline: 32 gives about a ±17-point interval at 50% accuracy, wide enough to flip a length in or out of the band by chance. 64 gives about ±12.</p>
+<h3>3.4 The arms</h3>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Who picks the difficulty</th>
+<th>Training answers</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A, self-curriculum</td>
+<td>The model, from its probe accuracy</td>
+<td>Its own, checker-verified</td>
+</tr>
+<tr>
+<td>B, fixed mix</td>
+<td>Nobody: uniform over 2–10 digits</td>
+<td>Its own, checker-verified</td>
+</tr>
+<tr>
+<td>B+key, reference</td>
+<td>Same as B</td>
+<td>Its own; the true answer if no try is right</td>
+</tr>
+<tr>
+<td>C, hard-only</td>
+<td>Nobody: uniform over 8–10 digits</td>
+<td>Its own, checker-verified</td>
+</tr>
+</tbody>
+</table></div>
+<p>Arm C was added after I had seen the A-versus-B result. Its 8–10-digit range was chosen knowing where A's gain appeared, so it had hindsight that A did not.</p>
+<h3>3.5 What was planned and what was added</h3>
+<p>Arms A and B and the first three seeds were planned before any result. Everything else was added after seeing results, and that matters for how much to trust the p-values.</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Arms A, B; seeds 0–2; 512 examples per round</td>
+<td>Planned</td>
+</tr>
+<tr>
+<td>B+key split off from B</td>
+<td>Changed before any training result</td>
+</tr>
+<tr>
+<td>Seeds 3–9</td>
+<td>Added after seeds 0–2 looked promising but inconclusive</td>
+</tr>
+<tr>
+<td>Paired t-tests, last-three-rounds and leave-one-seed-out checks</td>
+<td>Added after seeing results</td>
+</tr>
+<tr>
+<td>Arm C</td>
+<td>Added after the ten-seed A-versus-B result</td>
+</tr>
+<tr>
+<td>11–20-digit evaluation</td>
+<td>Added after Arm C</td>
+</tr>
+<tr>
+<td>Accuracy against generated tokens; sum-9 analysis</td>
+<td>Added after the results; exploratory</td>
+</tr>
+</tbody>
+</table></div>
+<p>None of the tests is corrected for multiple comparisons.</p>
+<h2>4. Evidence</h2>
+<p>All numbers are the mean over seeds 0–9 at round 10, held-out accuracy over lengths 2–10 weighted equally, 1,800 greedy problems. Gaps are in percentage points, with a 95% interval and a two-sided paired t-test across seeds [<a href="#ref-8">8</a>].</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Round 10</th>
+<th>Round 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Untrained</td>
+<td>43.9%</td>
+<td>–</td>
+</tr>
+<tr>
+<td>A, self-curriculum</td>
+<td>84.7%</td>
+<td>63.9%</td>
+</tr>
+<tr>
+<td>B, fixed mix</td>
+<td>78.9%</td>
+<td>71.6%</td>
+</tr>
+<tr>
+<td>B+key</td>
+<td>81.4%</td>
+<td>–</td>
+</tr>
+<tr>
+<td>C, hard-only</td>
+<td>87.1%</td>
+<td>74.3%</td>
+</tr>
+</tbody>
+</table></div>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Comparison</th>
+<th>Gap</th>
+<th>95% interval</th>
+<th>p</th>
+<th>First arm ahead</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A − B</td>
+<td>+5.8</td>
+<td>+1.7 to +10.0</td>
+<td>0.011</td>
+<td>9 of 10 seeds</td>
+</tr>
+<tr>
+<td>C − B</td>
+<td>+8.2</td>
+<td>+5.1 to +11.3</td>
+<td>&lt; 0.001</td>
+<td>10 of 10</td>
+</tr>
+<tr>
+<td>A − C</td>
+<td>−2.4</td>
+<td>−4.8 to +0.1</td>
+<td>0.056</td>
+<td>1 of 10</td>
+</tr>
+<tr>
+<td>B+key − B</td>
+<td>+2.5</td>
+<td>–</td>
+<td>0.21</td>
+<td>–</td>
+</tr>
+</tbody>
+</table></div>
+<p><strong>1. A beats a uniform mix.</strong> The A − B gap also holds over the last three rounds (+5.9, p = 0.003). A is behind at round 1 (−7.7 points, behind on 9 of 10 seeds) and level at round 2. The seeds 3–9 alone, run after my interim look, give +5.8 (p = 0.055, ahead on 6 of 7), so I read this as moderate evidence.</p>
+<p><strong>2. A fixed hard-only mix does at least as well.</strong> C beats B by more than A does, with no probe and no adaptation. A and C are level over rounds 2–9 (mean gap +0.2, p = 0.90) and over the last three rounds (−0.3, p = 0.78). C's 2.4-point lead comes almost entirely from round 10, so I treat A − C as inconclusive. Seed 3 contributes much of it: A − C is −11.2 there, and −1.4 (p = 0.022) without it.</p>
+<p><strong>3. Where Arm A trained.</strong> On every seed A's first edge was 5–7 digits, and it first included 10 digits by round 2–4. It trained only on 8–10 digits in 67 of 100 rounds. From round 6 on, 33 of 50 rounds trained on a single length, and in 15 of those nothing fell inside the band, so it used the fallback. The task stops at 10 digits, so the edge had nowhere further to go. In practice A became a hard-only arm after the first few rounds.</p>
+<p><strong>4. Round 1 is where A loses.</strong> After round 1, C leads A by 10.4 points on all 10 seeds, while roughly matching B (+2.7, ahead on 5 of 10). A reaches 80% at a median of round 4, against 4.5 for C and 7 for B.</p>
+<p><strong>5. Compute.</strong> Training is matched in examples, not in generated tokens. Tokens generated to collect training data (including A's probe and rejected tries, excluding evaluation):</p>
+<div class="table-wrap"><table>
+<thead>
+<tr>
+<th>Arm</th>
+<th>Tokens per run</th>
+<th>Round 1</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>356k</td>
+<td>–</td>
+</tr>
+<tr>
+<td>B</td>
+<td>371k</td>
+<td>–</td>
+</tr>
+<tr>
+<td>B+key</td>
+<td>176k</td>
+<td>–</td>
+</tr>
+<tr>
+<td>C</td>
+<td>509k</td>
+<td>213k (42%)</td>
+</tr>
+</tbody>
+</table></div>
+<p>C pays up front because the untrained model solves only 15%, 12% and 8% of the 8-, 9- and 10-digit problems it draws (at least one of 4 tries right). After round 1, A, B and C spend about 36k, 30k and 33k tokens per round. Reading C's curve at A's final token total for each seed gives A ahead by +3.8 points (+0.4 to +7.1, p = 0.031, 8 of 10 seeds). This comparison was defined after I saw the results, so it is exploratory.</p>
+<p><strong>6. Beyond the trained range.</strong> No arm trained past 10 digits. On new 11–13-digit problems (greedy, 32 new tokens), the round-10 models score C 61.1%, A 56.5%, B 43.9%, B+key 43.2%, against 1.8% untrained. A − C is −4.6 (−11.1 to +1.9, p = 0.147). The order matches the 10-digit order, so I read this as the existing gaps carrying on, not one arm generalising better.</p>
+<h3>Failure cases and checks</h3>
+<ul>
+<li><strong>Sum-9 columns (exploratory).</strong> I called a column a sum-9 column when its two digits add to 9 and no carry comes in. On 2–6-digit problems the untrained model gets 50.6% of problems with at least one such column right (122 of 241), against 76.4% of those without one (580 of 759); the gap holds within lengths (Mantel–Haenszel, stratified by length, p &lt; 0.001). Of the 89 wrong answers that are too high by exactly a power of ten in a non-units column, the column to its right sums to 9 with no carry in for 37 (42%), although about 10% of digit pairs sum to 9. The model seems to add a carry that never arrives. Quirke &amp; Barez's one-layer model failed the other way, when a carry did arrive and had to cascade (445 + 555) [<a href="#ref-7">7</a>]. The hypothesis came from the error analysis it was tested on.</li>
+<li><strong>Carries don't predict failure.</strong> Within a length, more carries did not lower accuracy. Length is what makes a problem hard for this model.</li>
+<li><strong>The 16-token cap.</strong> I re-ran every round-10 model with 32 tokens: of 72,000 replies, 271 reached 16 tokens without ending (A 1, B 49, B+key 221, C 0), and none lost any part of the number. Only round 10 was re-checked; earlier rounds were not.</li>
+<li><strong>Interrupted runs.</strong> Three Arm A runs were resumed from a saved round and one Arm B run was restarted. A resumed run reseeds its sampler. Results sit inside the normal range.</li>
+</ul>
+<h3>Limits</h3>
+<ul>
+<li><strong>One model, one task.</strong> Long sums contain the same column steps as short ones, so practice on long ones transfers unusually well. C beats B on 4–7 digits without ever training there. On a task where skills transfer less, choosing what to practise may matter more.</li>
+<li><strong>Equal examples, not equal supervision.</strong> The loss is on answer tokens, and A and C train on longer sums (mean operand length 8.6 and 9.0 digits, against 6.0 for B). A C example carries roughly 1.4 times as many supervised tokens as a B example, which may explain part of C's lead.</li>
+<li><strong>The 10-digit ceiling</strong> turned A into a hard-only arm.</li>
+<li><strong>One held-out set, ten seeds.</strong> Ten seeds can show the larger gaps, not rule out small ones. A gap that is not distinguishable from zero is not evidence that two arms are equal. Single seeds vary widely: A − B ranges from −3.6 (seed 3) to +18.2 (seed 6).</li>
+</ul>
+<h2>5. My view</h2>
+<p><em>(This whole section is my view.)</em></p>
+<p>Adaptation is the obvious story, and this data does not support it for this task: most of the benefit comes from spending the budget on long sums, and A converges to doing that by itself.</p>
+<p>What I still believe is that adaptation is worth something this run couldn't measure. Someone had to pick 8–10 digits for Arm C, and I picked it after seeing where A gained. A found those lengths from nothing. On a task where a good fixed range is harder to guess, that could matter. Here the range was easy to guess.</p>
+<p>The most useful result may be the round-1 story. A's only clear weakness is its first round, and C's only extra cost is its first round. If adaptation matters only for choosing where to start, that suggests a hybrid, which is the next experiment.</p>
+<p>I also take away a habit: the control I added late (Arm C) changed the conclusion. I would add a "hard-only" style control to the plan of any future curriculum experiment from the start.</p>
+<h2>6. Open questions</h2>
+<ul>
+<li>Does the A − C gap last past round 10, or was it noise? <em>(Untested.)</em></li>
+<li>Is A's slow start caused by its first edge of 5–7 digits? One possible cause, not tested here.</li>
+<li>Would a fixed easy-to-hard ramp, set in advance, match A? That would separate adapting from simply getting harder over time.</li>
+<li>Does the picture hold on a task where long problems don't cover short ones, such as multiplication?</li>
+</ul>
+<h2>7. Next</h2>
+<p><strong>Arm D, edge then hard.</strong> Round 1 as in Arm A (probe, train at the edge), rounds 2–10 as in Arm C (fixed 8–10 digits). If D matches C's accuracy at A's token cost, that is what adapting bought here. <em>(Speculative: I expect it to, but have not run it.)</em> After that: a fixed ramp curriculum, and a second task.</p>
+  <h2 id="references">References</h2>
+  <ol class="refs">
+    <li id="ref-1">Zelikman, E., Wu, Y., Mu, J., Goodman, N. D. <em>STaR: Bootstrapping Reasoning With Reasoning.</em> NeurIPS 2022. <a href="https://arxiv.org/abs/2203.14465">arXiv:2203.14465</a></li>
+    <li id="ref-2">Singh, A., et al. <em>Beyond Human Data: Scaling Self-Training for Problem-Solving with Language Models.</em> 2023. <a href="https://arxiv.org/abs/2312.06585">arXiv:2312.06585</a></li>
+    <li id="ref-3">Bengio, Y., Louradour, J., Collobert, R., Weston, J. <em>Curriculum Learning.</em> ICML 2009. <a href="https://mlanthology.org/icml/2009/bengio2009icml-curriculum">mlanthology.org/icml/2009/bengio2009icml-curriculum</a></li>
+    <li id="ref-4">Matiisen, T., Oliver, A., Cohen, T., Schulman, J. <em>Teacher-Student Curriculum Learning.</em> 2017. <a href="https://arxiv.org/abs/1707.00183">arXiv:1707.00183</a></li>
+    <li id="ref-5">Zhao, A., et al. <em>Absolute Zero: Reinforced Self-play Reasoning with Zero Data.</em> 2025. <a href="https://arxiv.org/abs/2505.03335">arXiv:2505.03335</a></li>
+    <li id="ref-6">Lee, N., et al. <em>Teaching Arithmetic to Small Transformers.</em> ICLR 2024. <a href="https://arxiv.org/abs/2307.03381">arXiv:2307.03381</a></li>
+    <li id="ref-7">Quirke, P., Barez, F. <em>Understanding Addition in Transformers.</em> 2023. <a href="https://arxiv.org/abs/2310.13121">arXiv:2310.13121</a></li>
+    <li id="ref-8">Sidana, K. <em>self-curriculum</em> (code, logs and results: <code>src/selfcurr/curriculum.py</code>, <code>src/selfcurr/config.py</code>, <code>results/</code>, <code>scripts/</code>). <a href="https://github.com/karan-vir/self-curriculum">github.com/karan-vir/self-curriculum</a>, commit 372ff14</li>
+  </ol>
+</article>
+</main>
+<hr>
+<footer>© 2026 Karanvir Sidana</footer>
+</div>
+</body>
+</html>
