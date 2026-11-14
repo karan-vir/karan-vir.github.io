@@ -16,6 +16,9 @@
 .tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .panel-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .no-js .tabs{display:none}
+.tags{display:flex;flex-wrap:wrap;gap:6px;flex-basis:100%}
+.tag{font-family:var(--font-mono);font-size:.72rem;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:0 8px}
+ul.list li{margin-bottom:14px}
 .no-js .panel-title{position:static;width:auto;height:auto;clip:auto;margin-top:32px}
 </style>
 </head>
@@ -27,20 +30,26 @@
 </header>
 <main>
   <div class="tabs" role="tablist" aria-label="Writing">
-    <button role="tab" id="tab-views" aria-controls="panel-views" aria-selected="true">Views</button>
+    <button role="tab" id="tab-reading" aria-controls="panel-reading" aria-selected="true">Reading</button>
+    <button role="tab" id="tab-views" aria-controls="panel-views" aria-selected="false" tabindex="-1">Views</button>
     <button role="tab" id="tab-experiments" aria-controls="panel-experiments" aria-selected="false" tabindex="-1">Experiments</button>
   </div>
+  <section class="tab-panel" id="panel-reading" role="tabpanel" aria-labelledby="tab-reading">
+    <h2 class="panel-title">Reading</h2>
+    <ul class="list">
+      <li data-tags="self-learning,neuroscience,curiosity,memory,meta-learning"><span class="date">2026-10-18</span><a href="writing/how-humans-learn.html">How Humans Learn: Notes Toward Self-Learning Machines</a><span class="tags"><span class="tag">self-learning</span><span class="tag">neuroscience</span><span class="tag">curiosity</span><span class="tag">memory</span><span class="tag">meta-learning</span></span></li>
+    </ul>
+  </section>
   <section class="tab-panel" id="panel-views" role="tabpanel" aria-labelledby="tab-views">
     <h2 class="panel-title">Views</h2>
     <ul class="list">
-      <li><span class="date">2026-11-14</span><a href="writing/recursive-ai.html">Recursive AI</a></li>
-      <li><span class="date">2026-10-18</span><a href="writing/how-humans-learn.html">How Humans Learn: Notes Toward Self-Learning Machines</a></li>
+      <li data-tags="recursive-ai,self-improvement,self-learning,robotics"><span class="date">2026-11-14</span><a href="writing/recursive-ai.html">Recursive AI</a><span class="tags"><span class="tag">recursive-ai</span><span class="tag">self-improvement</span><span class="tag">self-learning</span><span class="tag">robotics</span></span></li>
     </ul>
   </section>
   <section class="tab-panel" id="panel-experiments" role="tabpanel" aria-labelledby="tab-experiments">
     <h2 class="panel-title">Experiments</h2>
     <ul class="list">
-      <li><span class="date">2026-11-14</span><a href="writing/self-curriculum.html">Can a Small Model Choose Its Own Training Problems? A Ten-Seed Test on Addition</a></li>
+      <li data-tags="self-curriculum,curriculum-learning,self-training,small-models,arithmetic"><span class="date">2026-11-14</span><a href="writing/self-curriculum.html">Can a Small Model Choose Its Own Training Problems? A Ten-Seed Test on Addition</a><span class="tags"><span class="tag">self-curriculum</span><span class="tag">curriculum-learning</span><span class="tag">self-training</span><span class="tag">small-models</span><span class="tag">arithmetic</span></span></li>
     </ul>
   </section>
 </main>
