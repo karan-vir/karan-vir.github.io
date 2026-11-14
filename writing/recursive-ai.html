@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recursive AI · Karanvir Sidana</title>
+<meta name="description" content="What recursive AI means to me: not just an AI that does AI research, but one that can learn anything it needs by itself.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="../style.css">
+<style>
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:8px 0 24px}
+.tabs button{font:inherit;font-size:.95rem;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:8px 14px;margin-bottom:-1px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.no-js .tabs{display:none}
+.tab-panel h2{margin-top:0}
+.no-js .tab-panel h2{margin-top:40px}
+</style>
+</head>
+<body class="no-js">
+<div class="wrap">
+<header class="site">
+  <p class="site-name"><a href="../index.html">Karanvir Sidana</a></p>
+  <nav class="top" aria-label="Main"><a href="../index.html">About</a><a href="../research.html">Research</a><a href="../writing.html" aria-current="page">Writing</a></nav>
+</header>
+<main>
+<article class="post">
+  <a class="back" href="../writing.html">← Writing</a>
+  <p class="eyebrow"><span class="date">2026-11-14</span></p>
+  <h1>Recursive AI</h1>
+
+  <div class="tabs" role="tablist" aria-label="Recursive AI">
+    <button role="tab" id="tab-views" aria-controls="panel-views" aria-selected="true">My views</button>
+    <button role="tab" id="tab-experiments" aria-controls="panel-experiments" aria-selected="false" tabindex="-1">My experiments</button>
+  </div>
+
+  <section class="tab-panel" id="panel-views" role="tabpanel" aria-labelledby="tab-views">
+    <h2>My views</h2>
+    <p>The current notion of Recursive AI is really simple:<br>
+    <strong>Build an AI that can do AI research and build its own AI successors.</strong></p>
+    <p>An elaboration on this definition would be building an AI that can build better models automatically, has research taste, knows what the right questions are, and can carry forward experiments. This is what most labs call RSI, or Recursive Self-Improvement.</p>
+    <p>I don't fully agree with this definition. For me, Recursive AI is not just a system that can do AI research. It is a system that can learn anything it needs to learn by itself, without any human intervention. Here is an example:</p>
+    <p>You give an AI robot a dance video and ask it to mimic the dance. The robot has never seen it before. It should be able to mimic it without human intervention. Why is this a difficult problem?</p>
+    <p>Because the AI needs an appropriate understanding of physics, music and rhythm, pace of execution, how to move its actuators, and hundreds of other things. When an AI can do such a task with ease, I can confidently say that recursive AI is here.</p>
+  </section>
+
+  <section class="tab-panel" id="panel-experiments" role="tabpanel" aria-labelledby="tab-experiments">
+    <h2>My experiments</h2>
+    <ul>
+      <li><span class="date">2026-11-14</span> <a href="self-curriculum.html">Can a Small Model Choose Its Own Training Problems? A Ten-Seed Test on Addition</a></li>
+    </ul>
+  </section>
+</article>
+</main>
+<hr>
+<footer>© 2026 Karanvir Sidana</footer>
+</div>
+<script>
+(function(){
+  document.body.classList.remove('no-js');
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  function select(t){
+    tabs.forEach(function(x){
+      var on=x===t;
+      x.setAttribute('aria-selected',on);
+      x.tabIndex=on?0:-1;
+      document.getElementById(x.getAttribute('aria-controls')).hidden=!on;
+    });
+  }
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){select(t)});
+    t.addEventListener('keydown',function(e){
+      var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;
+      if(d){var n=tabs[(i+d+tabs.length)%tabs.length];select(n);n.focus();e.preventDefault();}
+    });
+  });
+  select(tabs[0]);
+})();
+</script>
+</body>
+</html>
