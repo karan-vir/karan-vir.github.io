@@ -7,28 +7,28 @@
 <meta name="description" content="Karanvir Sidana on recursive AI: reading, views and experiments.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..700&family=IBM+Plex+Mono:wght@400&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap">
 <link rel="stylesheet" href="style.css">
 <style>
-.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:8px 0 20px}
-.tabs button{font:inherit;font-size:.95rem;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:8px 14px;margin-bottom:-1px;cursor:pointer}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:0 0 4px}
+.tabs button{font-family:var(--font-display);font-size:1.05rem;font-weight:600;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:10px 14px 10px 0;margin:0 14px -1px 0;cursor:pointer}
 .tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}
 .tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .panel-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 .no-js .tabs{display:none}
-.tags{display:flex;flex-wrap:wrap;gap:6px;flex-basis:100%}
-.tag{font-family:var(--font-mono);font-size:.72rem;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:0 8px}
-ul.list li{margin-bottom:14px}
+.page-title{margin-bottom:20px}
+ul.list li:first-child{border-top:0}
 .no-js .panel-title{position:static;width:auto;height:auto;clip:auto;margin-top:32px}
 </style>
 </head>
 <body class="no-js">
 <div class="wrap">
 <header class="site">
-  <p class="site-name"><a href="index.html">Karanvir Sidana</a></p>
+  <p class="site-name"><a href="index.html"><svg class="mark" viewBox="-52 -52 104 104" width="26" height="26" aria-hidden="true" focusable="false"><rect x="-50.000" y="-50.000" width="100.000" height="100.000" transform="rotate(0)"/><rect x="-39.680" y="-39.680" width="79.360" height="79.360" transform="rotate(18)"/><rect x="-31.490" y="-31.490" width="62.981" height="62.981" transform="rotate(36)"/><rect x="-24.991" y="-24.991" width="49.982" height="49.982" transform="rotate(54)"/><rect x="-19.833" y="-19.833" width="39.666" height="39.666" transform="rotate(72)"/></svg>Karanvir Sidana</a></p>
   <nav class="top" aria-label="Main"><a href="index.html">About</a><a href="writing.html" aria-current="page">Recursive AI</a><a href="inference.html">Inference</a></nav>
 </header>
 <main>
+  <h1 class="page-title">Recursive AI</h1>
   <div class="tabs" role="tablist" aria-label="Recursive AI">
     <button role="tab" id="tab-reading" aria-controls="panel-reading" aria-selected="true">Reading</button>
     <button role="tab" id="tab-views" aria-controls="panel-views" aria-selected="false" tabindex="-1">Views</button>
