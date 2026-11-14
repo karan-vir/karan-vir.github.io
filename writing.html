@@ -9,22 +9,55 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400&family=IBM+Plex+Sans:wght@400;600&display=swap">
 <link rel="stylesheet" href="style.css">
+<style>
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin:8px 0 20px}
+.tabs button{font:inherit;font-size:.95rem;background:none;border:0;border-bottom:2px solid transparent;color:var(--muted);padding:8px 14px;margin-bottom:-1px;cursor:pointer}
+.tabs button[aria-selected="true"]{color:var(--fg);border-bottom-color:var(--accent);font-weight:600}
+.tabs button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.panel-title{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.no-js .tabs{display:none}
+.no-js .panel-title{position:static;width:auto;height:auto;clip:auto;margin-top:32px}
+</style>
 </head>
-<body>
+<body class="no-js">
 <div class="wrap">
 <header class="site">
   <p class="site-name"><a href="index.html">Karanvir Sidana</a></p>
   <nav class="top" aria-label="Main"><a href="index.html">About</a><a href="research.html">Research</a><a href="writing.html" aria-current="page">Writing</a></nav>
 </header>
 <main>
-  <ul class="list">
-    <li><span class="date">2026-11-14</span><a href="writing/recursive-ai.html">Recursive AI</a></li>
-    <li><span class="date">2026-11-14</span><a href="writing/self-curriculum.html">Can a Small Model Choose Its Own Training Problems? A Ten-Seed Test on Addition</a></li>
-    <li><span class="date">2026-10-18</span><a href="writing/how-humans-learn.html">How Humans Learn: Notes Toward Self-Learning Machines</a></li>
-  </ul>
+  <div class="tabs" role="tablist" aria-label="Writing">
+    <button role="tab" id="tab-views" aria-controls="panel-views" aria-selected="true">Views</button>
+    <button role="tab" id="tab-experiments" aria-controls="panel-experiments" aria-selected="false" tabindex="-1">Experiments</button>
+  </div>
+  <section class="tab-panel" id="panel-views" role="tabpanel" aria-labelledby="tab-views">
+    <h2 class="panel-title">Views</h2>
+    <ul class="list">
+      <li><span class="date">2026-11-14</span><a href="writing/recursive-ai.html">Recursive AI</a></li>
+      <li><span class="date">2026-10-18</span><a href="writing/how-humans-learn.html">How Humans Learn: Notes Toward Self-Learning Machines</a></li>
+    </ul>
+  </section>
+  <section class="tab-panel" id="panel-experiments" role="tabpanel" aria-labelledby="tab-experiments">
+    <h2 class="panel-title">Experiments</h2>
+    <ul class="list">
+      <li><span class="date">2026-11-14</span><a href="writing/self-curriculum.html">Can a Small Model Choose Its Own Training Problems? A Ten-Seed Test on Addition</a></li>
+    </ul>
+  </section>
 </main>
 <hr>
 <footer>© 2026 Karanvir Sidana</footer>
 </div>
+<script>
+(function(){
+  document.body.classList.remove('no-js');
+  var tabs=[].slice.call(document.querySelectorAll('[role="tab"]'));
+  function select(t){tabs.forEach(function(x){var on=x===t;x.setAttribute('aria-selected',on);x.tabIndex=on?0:-1;document.getElementById(x.getAttribute('aria-controls')).hidden=!on;});}
+  tabs.forEach(function(t,i){
+    t.addEventListener('click',function(){select(t);history.replaceState(null,'','#'+t.id.slice(4));});
+    t.addEventListener('keydown',function(e){var d=e.key==='ArrowRight'?1:e.key==='ArrowLeft'?-1:0;if(d){var n=tabs[(i+d+tabs.length)%tabs.length];select(n);n.focus();e.preventDefault();}});
+  });
+  select(document.getElementById('tab-'+location.hash.slice(1))||tabs[0]);
+})();
+</script>
 </body>
 </html>
